@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Porto Restoration Project: affordable, green housing for Lordelo do Ouro. Hackathon 2026.">
+    <title>Porto Restoration Project | Hackathon 2026</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/latin-400.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/latin-500.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/latin-600.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-one@5.3.0/latin-700.css">
+    <style>
+        /* Colours taken from the Canva design. */
+        :root {
+            --navy: #185079;
+            --blue: #3885ab;
+            --blue-mid: #4e97bb;
+            --blue-soft: #6ba1bc;
+            --blue-light: #95bfd1;
+            --blue-pale: #bbd6e1;
+            --cream: #fbf6f1;
+            --gutter: clamp(20px, 5.6vw, 108px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Each slide fills the screen; scrolling snaps from one to the next. */
+        html {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Open Sauce One', system-ui, sans-serif;
+            color: var(--navy);
+            background: var(--cream);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+        }
+
+        .slide {
+            position: relative;
+            min-height: 100vh;
+            min-height: 100svh;
+            padding: clamp(56px, 8vh, 110px) var(--gutter);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            scroll-snap-align: start;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        /* Paper grain, standing in for the crumpled-paper background. */
+        .slide::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -2;
+            opacity: 0.35;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.5 0 0 0 0 0.45 0 0 0 0.18 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* Soft blue blobs, like the blurred gradient shapes on the slides. */
+        .blob {
+            position: absolute;
+            z-index: -1;
+            width: 70vw;
+            aspect-ratio: 1.17;
+            border-radius: 50%;
+            background: radial-gradient(closest-side, rgba(56, 133, 171, 0.55), rgba(149, 191, 209, 0.35) 55%, transparent);
+            filter: blur(40px);
+            pointer-events: none;
+        }
+
+        .blob.top-right { top: -45vh; right: -30vw; width: 90vw; }
+        .blob.bottom-left { bottom: -45vh; left: -45vw; width: 90vw; }
+        .blob.bottom { bottom: -75vh; left: -20vw; width: 130vw; }
+
+        /* Type */
+        .title {
+            font-weight: 600;
+            font-size: clamp(2.6rem, 8.5vw, 9.5rem);
+            line-height: 1.02;
+            letter-spacing: -0.059em;
+            text-transform: uppercase;
+        }
+
+        .title.small {
+            font-size: clamp(2.3rem, 5.5vw, 6.6rem);
+        }
+
+        .eyebrow {
+            font-weight: 700;
+            font-size: clamp(1.4rem, 2.6vw, 3.3rem);
+            line-height: 1.08;
+            letter-spacing: -0.036em;
+            text-transform: uppercase;
+        }
+
+        .num {
+            font-weight: 700;
+            font-size: clamp(2.2rem, 4.2vw, 5rem);
+            line-height: 1;
+            letter-spacing: -0.059em;
+        }
+
+        p {
+            font-size: clamp(1rem, 1.35vw, 1.6rem);
+            line-height: 1.45;
+        }
+
+        .lead {
+            font-weight: 700;
+            font-size: clamp(1.1rem, 1.6vw, 2rem);
+        }
+
+        .bold { font-weight: 700; }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(28px, 5vw, 96px);
+            align-items: center;
+        }
+
+        .stack > * + * {
+            margin-top: clamp(18px, 3vh, 36px);
+        }
+
+        .photo {
+            width: 100%;
+            border-radius: 18px;
+            box-shadow: 0 18px 50px rgba(24, 80, 121, 0.18);
+        }
+
+        /* Slide 1: title */
+        .cover {
+            justify-content: space-between;
+        }
+
+        .cover-top {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .cover-top .mark {
+            width: clamp(36px, 4vw, 64px);
+            height: clamp(22px, 2.4vw, 38px);
+            border-radius: 999px;
+            background: var(--blue);
+        }
+
+        .cover-main {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: clamp(24px, 4vw, 80px);
+            align-items: end;
+            margin: clamp(28px, 5vh, 64px) 0;
+        }
+
+        .team {
+            font-size: clamp(1.05rem, 1.5vw, 1.8rem);
+            line-height: 1.5;
+        }
+
+        .team .bold {
+            margin-bottom: 4px;
+        }
+
+        .cover-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 20px;
+        }
+
+        .logo {
+            width: clamp(110px, 12vw, 230px);
+            border-radius: 50%;
+        }
+
+        .note {
+            font-size: 0.8rem;
+            opacity: 0.75;
+        }
+
+        .scroll-hint {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--navy);
+            text-decoration: none;
+        }
+
+        .scroll-hint span {
+            display: inline-block;
+            animation: nudge 1.8s ease-in-out infinite;
+        }
+
+        @keyframes nudge {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(6px); }
+        }
+
+        /* Slide 2: where */
+        .where-text {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: clamp(16px, 2.5vw, 40px);
+            align-items: start;
+        }
+
+        /* Slides 3 and 5: cards */
+        .cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(14px, 1.6vw, 28px);
+        }
+
+        .card {
+            display: flex;
+            gap: clamp(14px, 1.6vw, 24px);
+            align-items: flex-start;
+            padding: clamp(20px, 2.2vw, 40px);
+            border-radius: 22px;
+            background: var(--blue-light);
+        }
+
+        .card:nth-child(2) { background: var(--blue-mid); color: var(--cream); }
+        .card:nth-child(3) { background: var(--blue-pale); }
+        .card:nth-child(4) { background: var(--blue-soft); color: var(--cream); }
+
+        .card .num {
+            font-size: clamp(1.8rem, 2.6vw, 3.4rem);
+        }
+
+        .card p {
+            font-weight: 700;
+        }
+
+        /* Slide 4: solution */
+        .panel {
+            background: var(--blue-pale);
+            border-radius: 35px;
+            padding: clamp(24px, 4vw, 80px);
+        }
+
+        .timeline {
+            list-style: none;
+            position: relative;
+            padding-left: clamp(30px, 3vw, 54px);
+        }
+
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 9px;
+            top: 12px;
+            bottom: 12px;
+            width: 4px;
+            border-radius: 2px;
+            background: var(--navy);
+        }
+
+        .timeline li {
+            position: relative;
+        }
+
+        .timeline li + li {
+            margin-top: clamp(16px, 3vh, 36px);
+        }
+
+        .timeline li::before {
+            content: "";
+            position: absolute;
+            left: calc(-1 * clamp(30px, 3vw, 54px));
+            top: 6px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--navy);
+        }
+
+        .timeline .num {
+            font-size: clamp(1.8rem, 2.4vw, 3.2rem);
+            margin-bottom: 8px;
+        }
+
+        .timeline p {
+            font-weight: 700;
+            font-size: clamp(0.95rem, 1.2vw, 1.4rem);
+        }
+
+        .solution-photo {
+            height: clamp(120px, 20vh, 240px);
+            object-fit: cover;
+            margin-bottom: clamp(18px, 3.5vh, 40px);
+        }
+
+        .solution .stack p {
+            font-size: clamp(0.95rem, 1.2vw, 1.45rem);
+        }
+
+        .solution .panel {
+            padding-top: clamp(24px, 3.5vw, 64px);
+            padding-bottom: clamp(24px, 3.5vw, 64px);
+        }
+
+        /* Slide 5: matrixes */
+        .matrix-cards {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .matrix-cards .card:nth-child(3) {
+            grid-column: 1 / -1;
+            background: var(--blue-soft);
+            color: var(--cream);
+        }
+
+        /* Slide 6: analysis */
+        .centered {
+            align-items: center;
+            text-align: center;
+        }
+
+        .centered .stack {
+            max-width: 1000px;
+        }
+
+        /* Stacked bars: each bar's height is its total out of 50 (the
+           tallest), and its three pieces split it by their flex-grow. */
+        .chart {
+            display: flex;
+            align-items: flex-end;
+            gap: clamp(6px, 1vw, 14px);
+            width: min(560px, 100%);
+            height: clamp(140px, 30vh, 320px);
+            margin-left: auto;
+            margin-right: auto;
+            background: repeating-linear-gradient(to top, rgba(24, 80, 121, 0.12) 0 1px, transparent 1px 25%);
+        }
+
+        .bar {
+            flex: 1;
+            display: flex;
+            flex-direction: column-reverse;
+            height: calc(var(--total) / 50 * 100%);
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 1, 1);
+        }
+
+        .slide.visible .bar {
+            transform: none;
+            transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+            transition-delay: calc(0.6s + var(--b) * 0.15s);
+        }
+
+        .bar span {
+            flex-basis: 0;
+            background: var(--blue-light);
+        }
+
+        .bar span:nth-child(2) { background: var(--blue-soft); }
+
+        .bar span:nth-child(3) {
+            background: var(--blue);
+            border-radius: 6px 6px 0 0;
+        }
+
+        /* Slides 7 and 8: legal */
+        .legal-text {
+            max-width: 1150px;
+        }
+
+        .legal-text p {
+            font-size: clamp(1rem, 1.3vw, 1.5rem);
+        }
+
+        /* Last slide */
+        .thanks {
+            justify-content: center;
+        }
+
+        .thanks .eyebrow {
+            margin-top: clamp(24px, 5vh, 56px);
+        }
+
+        /* Dot navigation */
+        .dots {
+            position: fixed;
+            right: clamp(10px, 2vw, 32px);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .dots a {
+            position: relative;
+            display: block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid var(--navy);
+            background: transparent;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .dots a.active {
+            background: var(--navy);
+            transform: scale(1.25);
+        }
+
+        .dots a:focus-visible {
+            outline: 3px solid var(--blue);
+            outline-offset: 3px;
+        }
+
+        .dots a::after {
+            content: attr(data-label);
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: var(--navy);
+            color: var(--cream);
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .dots a:hover::after,
+        .dots a:focus-visible::after {
+            opacity: 1;
+        }
+
+        /* Content slides in from the sides each time a slide arrives, and
+           slides back out as it leaves. --i (set by the script) staggers
+           the pieces of a slide so they arrive one after another. */
+        .reveal {
+            opacity: 0;
+            transform: translateX(-120px);
+            transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.4, 0, 1, 1);
+        }
+
+        .reveal.from-right {
+            transform: translateX(120px);
+        }
+
+        .slide.visible .reveal {
+            opacity: 1;
+            transform: none;
+            transition: opacity 0.8s ease, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+            transition-delay: calc(0.15s + var(--i, 0) * 0.12s);
+        }
+
+        /* While the page glides between slides, scroll position is driven
+           by the script, so turn off CSS snapping and smooth scrolling. */
+        html.paging {
+            scroll-snap-type: none;
+            scroll-behavior: auto;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .reveal,
+            .reveal.from-right,
+            .slide.visible .reveal,
+            .bar,
+            .slide.visible .bar { opacity: 1; transform: none; transition: none; }
+            .scroll-hint span { animation: none; }
+        }
+
+        /* Short laptop screens: tighten the solution slide so it fits. */
+        @media (min-width: 861px) and (max-height: 1100px) {
+            .solution-photo { height: 15vh; }
+            .timeline li + li { margin-top: 2vh; }
+            .timeline .num { font-size: 1.6rem; margin-bottom: 4px; }
+            .timeline p { font-size: 0.9rem; }
+        }
+
+        /* Phones and narrow windows: stack the columns, and let tall
+           slides scroll freely instead of forcing a snap. */
+        @media (max-width: 860px), (max-height: 560px) {
+            html { scroll-snap-type: y proximity; }
+
+            .two-col,
+            .cover-main {
+                grid-template-columns: 1fr;
+            }
+
+            .cards,
+            .matrix-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .dots { right: 8px; gap: 10px; }
+            .dots a { width: 10px; height: 10px; }
+
+            .slide { padding-right: calc(var(--gutter) + 14px); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="dots" aria-label="Slides"></nav>
+
+    <main>
+        <!-- 1. Title -->
+        <section class="slide cover" id="start" data-label="Porto Restoration Project">
+            <div class="blob bottom"></div>
+            <div class="cover-top reveal">
+                <span class="mark" aria-hidden="true"></span>
+                <p class="eyebrow">Hackathon 2026</p>
+            </div>
+            <div class="cover-main">
+                <h1 class="title reveal">Porto restoration project</h1>
+                <div class="team reveal from-right">
+                    <p class="bold">Made by:</p>
+                    <p>Celeste Campione<br>Leonard Farris<br>Nara Franssen<br>Emily Wu<br>Hila Zauberer</p>
+                </div>
+            </div>
+            <div class="cover-bottom reveal">
+                <img class="logo" src="images/habiteco-logo.png" alt="HabitEco logo: Smart. Green. Affordable.">
+                <a class="scroll-hint" href="#where">Scroll <span aria-hidden="true">&#8595;</span></a>
+                <p class="note">None of the text here is AI</p>
+            </div>
+        </section>
+
+        <!-- 2. Where? -->
+        <section class="slide" id="where" data-label="Where?">
+            <div class="blob top-right"></div>
+            <div class="blob bottom-left"></div>
+            <div class="two-col">
+                <div class="stack reveal">
+                    <h2 class="title small">Where?</h2>
+                    <div class="where-text">
+                        <span class="num">01</span>
+                        <p class="lead">Lordelo Do Ouro, a part of Porto forgotten about. Buildings are crumbling and the crime rate is high. A once prospering area of Porto, has fallen from its former glory, we plan to restore it.</p>
+                    </div>
+                </div>
+                <img class="photo reveal from-right" src="images/lordelo-map.jpg" alt="Map of Porto with the Lordelo do Ouro area highlighted in green, beside the Douro river.">
+            </div>
+        </section>
+
+        <!-- 3. The important questions -->
+        <section class="slide" id="questions" data-label="The important questions">
+            <div class="two-col">
+                <h2 class="title small reveal">The important Questions</h2>
+                <div class="cards">
+                    <div class="card reveal from-right">
+                        <span class="num">01</span>
+                        <p>How might we make it easier for people to connect with eachother?</p>
+                    </div>
+                    <div class="card reveal from-right">
+                        <span class="num">02</span>
+                        <p>How might we revitalize and reus the beautiful unused land on the Douro?</p>
+                    </div>
+                    <div class="card reveal from-right">
+                        <span class="num">03</span>
+                        <p>How might we change the way people interact with eachothers and the environment?</p>
+                    </div>
+                    <div class="card reveal from-right">
+                        <span class="num">04</span>
+                        <p>How might we improve housing  availability while also revitalizing the environment and keeping crime rates manageable?</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Our solution -->
+        <section class="slide solution" id="solution" data-label="Our solution">
+            <div class="panel two-col">
+                <div class="stack reveal">
+                    <h2 class="title small">Our Solution</h2>
+                    <p class="bold">Our solution combines environmental restoration, community inclusion and economic boom. We plan to build a new 3 part apartment building enclosing a square garden on the riverfront of the Douro. The apartment building will be cheap for all unfortunate enough to have a low income, or to be struggling heavily. The apartment complex will allow more people to move, which makes more jobs, which improves the economy. If unable to pay for the full rent, they can apply for a maximum of 50% rent reduction in cost of a higher rent when they can later pay it.</p>
+                </div>
+                <div>
+                    <img class="photo solution-photo reveal from-right" src="images/building-rendering.jpg" alt="Rendering of a tall timber-clad apartment building with balconies and a covered entrance.">
+                    <ol class="timeline">
+                        <li class="reveal from-right">
+                            <p class="num">01</p>
+                            <p>Our three apartments will be inclusive to all. The lower floors will be for low-income residents while the top floors will be for the rich, which will help us fund the rent reductions.</p>
+                        </li>
+                        <li class="reveal from-right">
+                            <p class="num">02</p>
+                            <p>The gardens in the center will be both economically friendly and a place for the commumity to meet. We will also grow plants on the top of the apartments to improve greenery.</p>
+                        </li>
+                        <li class="reveal from-right">
+                            <p class="num">03</p>
+                            <p>We will have a fourth, shorter building, for celebrations of holidays, traditions or any celebrations. It can be rented or used publicly as a nice community celebration spot.</p>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. The matrixes -->
+        <section class="slide" id="matrixes" data-label="The matrixes">
+            <div class="blob top-right"></div>
+            <div class="two-col">
+                <div class="stack reveal">
+                    <h2 class="title small">The Matrixes</h2>
+                    <p class="lead">We had made 25 ideas and narrowed them down increasingly until we landed on one “best” idea. We did this by using 3 matrixes. the best ones for each were apart of our “Best” three ideas, until we could decide on one final idea.</p>
+                </div>
+                <div class="cards matrix-cards">
+                    <div class="card reveal from-right">
+                        <span class="num">01</span>
+                        <p>The first matrix was comparing Economic Impact with Community impact</p>
+                    </div>
+                    <div class="card reveal from-right">
+                        <span class="num">02</span>
+                        <p>The second matrix compared Economic Impact with Environmental Impact</p>
+                    </div>
+                    <div class="card reveal from-right">
+                        <span class="num">03</span>
+                        <p>The third matrix compared Environmental Impact and Community Impact.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. The analysis -->
+        <section class="slide centered" id="analysis" data-label="The analysis">
+            <div class="blob top-right"></div>
+            <div class="blob bottom-left"></div>
+            <div class="stack reveal from-right">
+                <h2 class="title small">the analysis</h2>
+                <p class="lead">We used our three matrixes to find the best overall idea, something that excelled in atleast 2 of the three will not being terrible in the third option. We managed to find the best overall option and we analyzed how we could make it better. We added a community hub, and the central garden.</p>
+                <!-- Stacked bar chart from the Canva slide, same values and colours. -->
+                <div class="chart" role="img" aria-label="Stacked bar chart: four bars, each made of three shades of blue, rising from left to right.">
+                    <div class="bar" style="--b: 0; --total: 20"><span style="flex-grow: 8"></span><span style="flex-grow: 8"></span><span style="flex-grow: 4"></span></div>
+                    <div class="bar" style="--b: 1; --total: 30"><span style="flex-grow: 12"></span><span style="flex-grow: 10"></span><span style="flex-grow: 8"></span></div>
+                    <div class="bar" style="--b: 2; --total: 36"><span style="flex-grow: 16"></span><span style="flex-grow: 10"></span><span style="flex-grow: 10"></span></div>
+                    <div class="bar" style="--b: 3; --total: 50"><span style="flex-grow: 20"></span><span style="flex-grow: 24"></span><span style="flex-grow: 6"></span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. The legal issues -->
+        <section class="slide" id="legal" data-label="The legal issues">
+            <div class="blob top-right"></div>
+            <div class="blob bottom-left"></div>
+            <div class="stack legal-text reveal">
+                <h2 class="title small">THE legal issues.</h2>
+                <p class="bold">Our project is a 12 story, affordable housing development in Porto, Lordelo De Ouro. Our apartment complex is a innovative, cheap yet environmentally friendly CLT and Steel core housing complex. Our building is built on Bairro De Alexios, a UOPG5 plot of land, which essentially means that even though Portuguese municipality laws restrict buildings over 12 stories tall, a recent municipal law (Regulamento do Plano Diretor Municipal do Porto (RPDM), specifically governed by Artigo 160.º) This law, official code Artigo 160, establishes the UOPG, stating specifically that the regulatory objective for this plot of land is the structure appropiate for a housing territory. By defining this property as an isolated vertical blocks, our building is exempt from the moda de cercéa rule, which forces buildings to limit their height. Alongside the UOPG5, we also utilize the UE1 to our advantage, a directive approved by the Porto municipality, and was published in the official legal journal as Aviso n. 14137/2024/2. It dictates that the density of our apartment complex is compacted into 3 twelve story buildings , and the remaining land is handed over to the Espaço Verde de Fruição Coletiva。</p>
+            </div>
+        </section>
+
+        <!-- 8. Legal problem (safety) -->
+        <section class="slide" id="safety" data-label="Legal problem">
+            <div class="blob top-right"></div>
+            <div class="blob bottom-left"></div>
+            <div class="two-col">
+                <div class="stack reveal">
+                    <h2 class="title small">LEgal problem</h2>
+                    <p class="bold">Now, onto the safety part, our hybrid CLT model strictly follows the Porto municipal rules on safety hazards, making our project viable. Our CLT/steel hybrid structure utilizes S355J2 steel, conforming to EU 10025-2/3. S355JS steel indicates that it is: S- Structural Steel. 355- Minimum yield strength of 355 MPa. J2- Can withstand up to 27 joules of force at -20°C. This steel is especially good for our unique type of structure, as it specializes in withstanding high levels of force and high yield strength. We will use S355J2 for our core frameworks and linking between objects. As for our core walls (concrete and steel) we will utilize Class C high ductility steel, specifically A500NR-SD, following Eurocode 8. Our CLT also conforms to Portugals Risk Category IV regulations, meaning we will install building wide sprinklers, and our CLT-steel hybrid panels use self-extinguishing properties.</p>
+                </div>
+                <img class="photo reveal from-right" src="images/clt-steel-structure.png" alt="Diagram of a CLT and steel hybrid frame: timber wall panels, steel columns, floor plates and stairs.">
+            </div>
+        </section>
+
+        <!-- 9. Thank you -->
+        <section class="slide thanks" id="thanks" data-label="Thank you">
+            <div class="blob bottom"></div>
+            <div class="reveal">
+                <h2 class="title">Thank you<br>For listening</h2>
+                <p class="eyebrow">Hackathon 2026</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Builds the dot navigation, slides each slide's content in and out,
+        // and on computers glides one slide at a time.
+        (function () {
+            const slides = Array.from(document.querySelectorAll('.slide'));
+            const nav = document.querySelector('.dots');
+            const root = document.documentElement;
+
+            slides.forEach(slide => {
+                const dot = document.createElement('a');
+                dot.href = '#' + slide.id;
+                dot.dataset.label = slide.dataset.label;
+                dot.setAttribute('aria-label', slide.dataset.label);
+                nav.appendChild(dot);
+
+                // Stagger the moving pieces of each slide in page order.
+                slide.querySelectorAll('.reveal').forEach((el, i) => el.style.setProperty('--i', i));
+            });
+
+            // The slide crossing the middle of the screen is the current one.
+            // Leaving slides lose "visible" so their content slides back out.
+            const dots = nav.querySelectorAll('a');
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    entry.target.classList.toggle('visible', entry.isIntersecting);
+                    if (!entry.isIntersecting) return;
+                    const i = slides.indexOf(entry.target);
+                    dots.forEach((dot, j) => {
+                        dot.classList.toggle('active', i === j);
+                        if (i === j) dot.setAttribute('aria-current', 'true');
+                        else dot.removeAttribute('aria-current');
+                    });
+                });
+            }, { rootMargin: '-50% 0px -50% 0px' });
+
+            slides.forEach(slide => observer.observe(slide));
+
+            // Gliding between slides, on computer-sized screens unless the
+            // visitor has asked for less motion. Touch scrolling and
+            // scrollbar dragging keep the normal CSS snapping.
+            const duration = 900;
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+            const wideEnough = window.matchMedia('(min-width: 861px) and (min-height: 561px)');
+            let animating = false;
+            let quietUntil = 0;
+
+            function canGlide() {
+                return !reduceMotion.matches && wideEnough.matches;
+            }
+
+            // The slide the top of the screen is in.
+            function currentIndex() {
+                const y = window.scrollY + 2;
+                let i = 0;
+                slides.forEach((slide, j) => { if (slide.offsetTop <= y) i = j; });
+                return i;
+            }
+
+            // A slide taller than the screen scrolls normally until its
+            // edge is reached; only then does the next glide happen.
+            function scrollsWithin(dir) {
+                const slide = slides[currentIndex()];
+                if (slide.offsetHeight <= window.innerHeight + 2) return false;
+                if (dir > 0) return window.scrollY + window.innerHeight < slide.offsetTop + slide.offsetHeight - 2;
+                return window.scrollY > slide.offsetTop + 2;
+            }
+
+            function ease(t) {
+                return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            }
+
+            function glideBy(dir) {
+                glideTo(currentIndex() + dir, dir < 0);
+            }
+
+            // fromBelow: arriving at a tall slide from the one after it
+            // lands on its bottom, so nothing is skipped.
+            function glideTo(i, fromBelow) {
+                i = Math.max(0, Math.min(slides.length - 1, i));
+                const slide = slides[i];
+                const start = window.scrollY;
+                const end = fromBelow
+                    ? Math.max(slide.offsetTop, slide.offsetTop + slide.offsetHeight - window.innerHeight)
+                    : slide.offsetTop;
+                if (start === end) return;
+
+                animating = true;
+                root.classList.add('paging');
+                const t0 = performance.now();
+
+                function step(now) {
+                    const t = Math.min(1, (now - t0) / duration);
+                    window.scrollTo(0, start + (end - start) * ease(t));
+                    if (t < 1) {
+                        requestAnimationFrame(step);
+                    } else {
+                        root.classList.remove('paging');
+                        animating = false;
+                        history.replaceState(null, '', '#' + slides[i].id);
+                    }
+                }
+                requestAnimationFrame(step);
+            }
+
+            // One wheel or trackpad swipe moves one slide. Trackpads keep
+            // sending wheel events after a swipe, so wait for a quiet gap
+            // before accepting the next one.
+            window.addEventListener('wheel', e => {
+                if (e.ctrlKey || Math.abs(e.deltaX) > Math.abs(e.deltaY) || !canGlide()) return;
+                const dir = e.deltaY > 0 ? 1 : -1;
+                const now = performance.now();
+                if (!animating && now >= quietUntil && scrollsWithin(dir)) return;
+                e.preventDefault();
+                if (animating || now < quietUntil) {
+                    quietUntil = Math.max(quietUntil, now + 200);
+                    return;
+                }
+                if (Math.abs(e.deltaY) < 4) return;
+                quietUntil = now + duration + 200;
+                glideBy(dir);
+            }, { passive: false });
+
+            window.addEventListener('keydown', e => {
+                if (e.altKey || e.ctrlKey || e.metaKey || !canGlide()) return;
+                const steps = { ArrowDown: 1, PageDown: 1, ArrowUp: -1, PageUp: -1 };
+                let dir = 0;
+                if (e.key in steps) dir = steps[e.key];
+                else if (e.key === ' ') dir = e.shiftKey ? -1 : 1;
+                else if (e.key !== 'Home' && e.key !== 'End') return;
+                if (dir && scrollsWithin(dir)) return;
+                e.preventDefault();
+                if (animating) return;
+                if (e.key === 'Home') glideTo(0);
+                else if (e.key === 'End') glideTo(slides.length - 1);
+                else glideBy(dir);
+            });
+
+            // Dots and the "Scroll" link glide too.
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a[href^="#"]');
+                if (!link || !canGlide()) return;
+                const i = slides.findIndex(slide => '#' + slide.id === link.getAttribute('href'));
+                if (i < 0) return;
+                e.preventDefault();
+                if (!animating) glideTo(i);
+            });
+        })();
+    </script>
+</body>
+</html>

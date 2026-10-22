@@ -398,6 +398,80 @@
             margin-top: clamp(24px, 5vh, 56px);
         }
 
+        /* Slide 9: 3D apartment */
+        .model-layout {
+            grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr);
+        }
+
+        .views {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .views button {
+            font: inherit;
+            font-weight: 600;
+            font-size: clamp(0.9rem, 1vw, 1.1rem);
+            padding: 8px 18px;
+            border-radius: 999px;
+            border: 2px solid var(--navy);
+            background: transparent;
+            color: var(--navy);
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .views button:hover {
+            background: var(--blue-pale);
+        }
+
+        .views button[aria-pressed="true"] {
+            background: var(--navy);
+            color: var(--cream);
+        }
+
+        .views button:focus-visible {
+            outline: 3px solid var(--blue);
+            outline-offset: 3px;
+        }
+
+        .model {
+            position: relative;
+            height: min(74vh, 820px);
+            border-radius: 35px;
+            overflow: hidden;
+            background: linear-gradient(180deg, var(--blue-pale), #e6eff2);
+            cursor: grab;
+            touch-action: none;
+        }
+
+        .model:active { cursor: grabbing; }
+
+        .model canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .model-status {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            font-weight: 600;
+        }
+
+        .model-hint {
+            position: absolute;
+            left: 20px;
+            bottom: 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
         /* Dot navigation */
         .dots {
             position: fixed;
@@ -513,6 +587,9 @@
             .matrix-cards {
                 grid-template-columns: 1fr;
             }
+
+            .model-layout { grid-template-columns: 1fr; }
+            .model { height: 60vh; }
 
             .dots { right: 8px; gap: 10px; }
             .dots a { width: 10px; height: 10px; }
@@ -679,7 +756,31 @@
             </div>
         </section>
 
-        <!-- 9. Thank you -->
+        <!-- 9. The apartment (3D floor plan) -->
+        <section class="slide" id="apartment" data-label="The apartment">
+            <div class="blob top-right"></div>
+            <div class="two-col model-layout">
+                <div class="stack reveal">
+                    <h2 class="title small">The Apartment</h2>
+                    <p class="lead">A twin apartment on the ground floor: a bedroom with two queen beds, a kitchen and dining room, a bathroom, and an entry with laundry. About 35 m² in all.</p>
+                    <div class="views" role="group" aria-label="Camera view">
+                        <button type="button" data-view="overview" aria-pressed="true">Overview</button>
+                        <button type="button" data-view="top" aria-pressed="false">Top</button>
+                        <button type="button" data-view="front" aria-pressed="false">Front</button>
+                        <button type="button" data-view="side" aria-pressed="false">Side</button>
+                    </div>
+                    <div class="views">
+                        <button type="button" data-walls aria-pressed="false">Full walls</button>
+                    </div>
+                </div>
+                <div class="model reveal from-right" role="img" aria-label="3D model of the twin apartment floor plan. Drag to turn it, scroll or pinch to zoom.">
+                    <p class="model-status">Loading 3D model…</p>
+                    <p class="model-hint">Drag to turn · Scroll to zoom · Right-drag to move</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 10. Thank you -->
         <section class="slide thanks" id="thanks" data-label="Thank you">
             <div class="blob bottom"></div>
             <div class="reveal">
@@ -798,6 +899,8 @@
             // before accepting the next one.
             window.addEventListener('wheel', e => {
                 if (e.ctrlKey || Math.abs(e.deltaX) > Math.abs(e.deltaY) || !canGlide()) return;
+                // Scrolling over the 3D model zooms it instead.
+                if (e.target.closest('.model')) return;
                 const dir = e.deltaY > 0 ? 1 : -1;
                 const now = performance.now();
                 if (!animating && now >= quietUntil && scrollsWithin(dir)) return;
@@ -836,6 +939,302 @@
                 if (!animating) glideTo(i);
             });
         })();
+    </script>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        // 3D model of the twin apartment floor plan. Measurements are in
+        // centimetres, read off the plan (502 × 702 cm), with x running left
+        // to right and z running top to bottom of the plan.
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        const box = document.querySelector('.model');
+        const slide = document.getElementById('apartment');
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+        const W = 502, D = 702, T = 15;
+        const FULL = 260, LOW = 100;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        box.querySelector('.model-status').remove();
+        box.prepend(renderer.domElement);
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.minDistance = 3;
+        controls.maxDistance = 20;
+        controls.maxPolarAngle = Math.PI / 2 - 0.05;
+
+        scene.add(new THREE.HemisphereLight(0xffffff, 0xbbd6e1, 1.6));
+        const sun = new THREE.DirectionalLight(0xffffff, 1.6);
+        sun.position.set(4, 9, 6);
+        sun.castShadow = true;
+        sun.shadow.mapSize.set(2048, 2048);
+        Object.assign(sun.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6 });
+        scene.add(sun);
+
+        // Everything is built in centimetres, then scaled to metres and
+        // centred on the origin.
+        const home = new THREE.Group();
+        home.scale.setScalar(0.01);
+        home.position.set(-W / 200, 0, -D / 200);
+        scene.add(home);
+
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.ShadowMaterial({ opacity: 0.15 }));
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -0.06;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        const materials = {};
+        function material(color, extra) {
+            const key = color + JSON.stringify(extra || {});
+            return materials[key] ||= new THREE.MeshStandardMaterial({ color, roughness: 0.8, ...extra });
+        }
+
+        // An axis-aligned block from (x1, y1, z1) to (x2, y2, z2).
+        function block(parent, x1, z1, x2, z2, y1, y2, color, extra) {
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(x2 - x1, y2 - y1, z2 - z1), material(color, extra));
+            mesh.position.set((x1 + x2) / 2, (y1 + y2) / 2, (z1 + z2) / 2);
+            mesh.castShadow = mesh.receiveShadow = true;
+            parent.add(mesh);
+            return mesh;
+        }
+
+        function cylinder(parent, x, z, r, y1, y2, color) {
+            const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, y2 - y1, 32), material(color));
+            mesh.position.set(x, (y1 + y2) / 2, z);
+            mesh.castShadow = mesh.receiveShadow = true;
+            parent.add(mesh);
+            return mesh;
+        }
+
+        // Floors, coloured like the plan.
+        block(home, 0, 0, W, D, -5, 0, '#cfc8bd');
+        block(home, T, T, 242, 340, 0, 1, '#dce9f8');   // Room 1
+        block(home, 256, T, W - T, 340, 0, 1, '#f8ecc6'); // Room 2
+        block(home, 265, 355, W - T, D - T, 0, 1, '#d6f1df'); // Room 3
+        block(home, T, 355, 251, D - T, 0, 1, '#f6dcdc'); // Room 4
+
+        // Walls. Each run lists its openings: doors leave a gap with a
+        // lintel above, windows add a sill, glass and a lintel.
+        const walls = new THREE.Group();
+        home.add(walls);
+        const runs = [
+            { axis: 'x', at: [0, T], from: 0, to: W, openings: [{ a: 75, b: 192, window: true }, { a: 356, b: 473, window: true }] },
+            { axis: 'x', at: [D - T, D], from: 0, to: W, openings: [{ a: 301, b: 448 }] },
+            { axis: 'z', at: [0, T], from: T, to: D - T, openings: [] },
+            { axis: 'z', at: [W - T, W], from: T, to: D - T, openings: [] },
+            { axis: 'z', at: [242, 256], from: T, to: 340, openings: [{ a: 122, b: 210 }] },
+            { axis: 'x', at: [340, 355], from: T, to: W - T, openings: [{ a: 337, b: 435 }] },
+            { axis: 'z', at: [251, 265], from: 355, to: D - T, openings: [{ a: 384, b: 471 }] },
+        ];
+
+        function buildWalls(height) {
+            walls.clear();
+            const piece = (run, a, b, y1, y2, color = '#f3eee6', extra) => {
+                y2 = Math.min(y2, height + 2);
+                if (y1 >= y2 || a >= b) return;
+                const [p, q] = run.at;
+                if (run.axis === 'x') block(walls, a, p, b, q, y1, y2, color, extra);
+                else block(walls, p, a, q, b, y1, y2, color, extra);
+            };
+            runs.forEach(run => {
+                let start = run.from;
+                run.openings.forEach(o => {
+                    piece(run, start, o.a, 0, height);
+                    piece(run, o.a, o.b, 210, height);
+                    if (o.window) {
+                        piece(run, o.a, o.b, 0, 90);
+                        piece(run, o.a, o.b, 90, Math.min(210, height), '#a9d3e8', { transparent: true, opacity: 0.35, roughness: 0.1 });
+                    }
+                    start = o.b;
+                });
+                piece(run, start, run.to, 0, height);
+            });
+            // Dark caps on top of the walls, like the plan's wall fill. Full
+            // walls are solid above the lintels; low walls stop at openings.
+            runs.forEach(run => {
+                const cap = (a, b) => piece(run, a, b, height, height + 2, '#3a3a3a');
+                if (height > 210) return cap(run.from, run.to);
+                let start = run.from;
+                run.openings.forEach(o => { cap(start, o.a); start = o.b; });
+                cap(start, run.to);
+            });
+        }
+
+        // Furniture, positioned from the plan.
+        const f = new THREE.Group();
+        home.add(f);
+
+        function bed(x1, x2) {
+            block(f, x1, 14, x2, 162, 1, 30, '#8a6a4a');
+            block(f, x1 + 2, 16, x2 - 2, 160, 30, 50, '#b3d2fb');
+            block(f, x1, 14, x2, 20, 1, 100, '#5f9ef5');
+            block(f, x1 + 6, 22, (x1 + x2) / 2 - 3, 50, 50, 58, '#f4f8ff');
+            block(f, (x1 + x2) / 2 + 3, 22, x2 - 6, 50, 50, 58, '#f4f8ff');
+            block(f, x1 + 2, 95, x2 - 2, 160, 50, 52, '#7fb3f6');
+        }
+        bed(17, 96);
+        bed(154, 233);
+        block(f, 100, 15, 150, 54, 1, 55, '#c8b08f');
+        block(f, 15, 282, 125, 340, 1, 200, '#c9b394');
+
+        block(f, 258, 15, 335, 124, 72, 76, '#f7d488');
+        [[262, 19], [331, 19], [262, 120], [331, 120]].forEach(([x, z]) => block(f, x - 2, z - 2, x + 2, z + 2, 1, 72, '#b98d3f'));
+        [[24, 68], [83, 127]].forEach(([z1, z2]) => {
+            block(f, 347, z1, 386, z2, 42, 46, '#f1d19c');
+            block(f, 386, z1, 393, z2, 1, 92, '#e9a748');
+            block(f, 349, z1 + 2, 353, z1 + 6, 1, 42, '#e9a748');
+            block(f, 349, z2 - 6, 353, z2 - 2, 1, 42, '#e9a748');
+        });
+
+        block(f, 432, 42, W - T, 104, 1, 180, '#eeeae0');
+        block(f, 432, 104, W - T, 164, 1, 90, '#cec6b0');
+        cylinder(f, 466, 134, 20, 88, 92, '#e8e6e0');
+        block(f, 432, 164, W - T, 282, 1, 90, '#ccc4ae');
+        block(f, 430, 282, W - T, 340, 1, 90, '#f6b9a3');
+        [[445, 297], [470, 297], [445, 324], [470, 324]].forEach(([x, z]) => cylinder(f, x, z, 9, 90, 92, '#e85a4f'));
+
+        block(f, 431, 355, W - T, 443, 1, 85, '#f1f4f2');
+        cylinder(f, 429, 399, 22, 43, 47, '#d9dfdc').rotation.z = Math.PI / 2;
+        block(f, 442, 488, W - T, 586, 1, 180, '#b8c7b8');
+
+        block(f, T, 376, 50, 418, 1, 75, '#f6efef');
+        cylinder(f, 80, 397, 24, 1, 42, '#fbf8f8').scale.set(1.15, 1, 0.85);
+        block(f, T, 504, 80, 588, 1, 85, '#e4e1ea');
+        cylinder(f, 44, 546, 24, 85, 88, '#f7f6f7').scale.set(0.8, 1, 1.15);
+        block(f, 81, 615, 248, D - T, 1, 55, '#e3e8f5');
+        block(f, 88, 622, 241, D - T - 7, 20, 56, '#cfe0f6');
+
+        // Room labels sit in each room and always draw on top.
+        function label(text, area, x, z) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 192;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'rgba(24, 80, 121, 0.92)';
+            ctx.beginPath();
+            ctx.roundRect(8, 8, 496, 176, 40);
+            ctx.fill();
+            ctx.fillStyle = '#fbf6f1';
+            ctx.textAlign = 'center';
+            ctx.font = '600 64px "Open Sauce One", system-ui, sans-serif';
+            ctx.fillText(text, 256, 95);
+            ctx.font = '500 44px "Open Sauce One", system-ui, sans-serif';
+            ctx.fillText(area, 256, 155);
+            const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), depthTest: false }));
+            sprite.scale.set(1.2, 0.45, 1);
+            sprite.position.set(x / 100 - W / 200, 1.4, z / 100 - D / 200);
+            sprite.renderOrder = 1;
+            scene.add(sprite);
+        }
+
+        document.fonts.ready.then(() => {
+            label('Bedroom', '8.6 m²', 128, 230);
+            label('Kitchen', '8.8 m²', 370, 230);
+            label('Entry', '8.8 m²', 360, 560);
+            label('Bathroom', '9.1 m²', 135, 500);
+            requestRender();
+        });
+
+        // Camera views, in metres. Target is the middle of the apartment.
+        const views = {
+            overview: [6.2, 8.4, 8.6],
+            top: [0, 14, 0.01],
+            front: [0, 6.5, 10.5],
+            side: [11, 6.5, 0],
+        };
+        const target = new THREE.Vector3(0, 0.6, 0);
+        camera.position.set(...views.overview);
+        controls.target.copy(target);
+
+        let flight = null;
+        function flyTo(name) {
+            const to = new THREE.Vector3(...views[name]);
+            if (reduceMotion.matches) {
+                camera.position.copy(to);
+                controls.target.copy(target);
+                requestRender();
+                return;
+            }
+            flight = { from: camera.position.clone(), fromTarget: controls.target.clone(), to, t0: performance.now() };
+            requestRender();
+        }
+
+        const viewButtons = slide.querySelectorAll('[data-view]');
+        viewButtons.forEach(button => button.addEventListener('click', () => {
+            viewButtons.forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+            flyTo(button.dataset.view);
+        }));
+
+        // Moving the camera by hand means no preset view is selected.
+        controls.addEventListener('start', () => {
+            flight = null;
+            viewButtons.forEach(b => b.setAttribute('aria-pressed', 'false'));
+        });
+
+        const wallsButton = slide.querySelector('[data-walls]');
+        wallsButton.addEventListener('click', () => {
+            const full = wallsButton.getAttribute('aria-pressed') !== 'true';
+            wallsButton.setAttribute('aria-pressed', String(full));
+            buildWalls(full ? FULL : LOW);
+            requestRender();
+        });
+        buildWalls(LOW);
+
+        function resize() {
+            const { clientWidth: w, clientHeight: h } = box;
+            if (!w || !h) return;
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            requestRender();
+        }
+        new ResizeObserver(resize).observe(box);
+
+        // Only draw while the slide is on screen.
+        let onScreen = false;
+        let frame = 0;
+        function requestRender() {
+            if (onScreen && !frame) frame = requestAnimationFrame(tick);
+        }
+
+        function tick(now) {
+            frame = 0;
+            let moving = false;
+            if (flight) {
+                const t = Math.min(1, (now - flight.t0) / 1100);
+                const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+                camera.position.lerpVectors(flight.from, flight.to, e);
+                controls.target.lerpVectors(flight.fromTarget, target, e);
+                if (t >= 1) flight = null;
+                moving = true;
+            }
+            moving = controls.update() || moving;
+            renderer.render(scene, camera);
+            if (moving || flight) requestRender();
+        }
+        controls.addEventListener('change', requestRender);
+
+        new IntersectionObserver(([entry]) => {
+            onScreen = entry.isIntersecting;
+            requestRender();
+        }).observe(box);
     </script>
 </body>
 </html>

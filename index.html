@@ -563,7 +563,42 @@
             font-weight: 400;
             font-style: italic;
             opacity: 0.6;
-            pointer-events: none;
+            font-family: inherit;
+            color: inherit;
+            background: none;
+            border: 0;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .model-credit:hover { opacity: 1; }
+
+        /* Disclaimer shown after clicking a 3D model's credit line. */
+        .credit-dialog {
+            max-width: min(420px, calc(100vw - 32px));
+            padding: 0;
+            border: 0;
+            border-radius: 16px;
+            color: var(--navy);
+            background: var(--cream);
+            font-family: inherit;
+            text-align: center;
+        }
+
+        .credit-dialog > div { padding: 28px 32px; }
+
+        .credit-dialog::backdrop { background: rgba(24, 80, 121, 0.45); }
+
+        .credit-dialog button {
+            margin-top: 20px;
+            padding: 8px 22px;
+            font: inherit;
+            font-weight: 600;
+            color: var(--cream);
+            background: var(--blue);
+            border: 0;
+            border-radius: 999px;
+            cursor: pointer;
         }
 
         .model-hint {
@@ -916,7 +951,7 @@
                 <div class="model reveal from-right" role="img" aria-label="3D model of the twin apartment floor plan. Drag to turn it, scroll or pinch to zoom.">
                     <p class="model-status">Loading 3D model…</p>
                     <p class="model-hint">Drag to turn · Scroll to zoom · Right-drag to move</p>
-                    <p class="model-credit">3D model embedded by Claude</p>
+                    <button type="button" class="model-credit">3D model embedded by Claude</button>
                 </div>
             </div>
         </section>
@@ -941,7 +976,7 @@
                 <div class="model reveal from-right" role="img" aria-label="3D model of the larger apartment floor plan. Drag to turn it, scroll or pinch to zoom.">
                     <p class="model-status">Loading 3D model…</p>
                     <p class="model-hint">Drag to turn · Scroll to zoom · Right-drag to move</p>
-                    <p class="model-credit">3D model embedded by Claude</p>
+                    <button type="button" class="model-credit">3D model embedded by Claude</button>
                 </div>
             </div>
         </section>
@@ -955,6 +990,13 @@
             </div>
         </section>
     </main>
+
+    <dialog class="credit-dialog" id="credit-dialog">
+        <div>
+            <p>3D Model was created by Nara and embedded in this Website by Claude</p>
+            <form method="dialog"><button>Close</button></form>
+        </div>
+    </dialog>
 
     <script>
         // Builds the dot navigation, slides each slide's content in and out,
@@ -1082,6 +1124,7 @@
 
             window.addEventListener('keydown', e => {
                 if (e.altKey || e.ctrlKey || e.metaKey || !canGlide()) return;
+                if (document.querySelector('dialog[open]')) return;
                 const steps = { ArrowDown: 1, PageDown: 1, ArrowUp: -1, PageUp: -1 };
                 let dir = 0;
                 if (e.key in steps) dir = steps[e.key];
@@ -1117,6 +1160,16 @@
                 clearTimeout(evilTimer);
                 evilTimer = setTimeout(() => evil.classList.remove('shown'), 5000);
             });
+        })();
+    </script>
+
+    <script>
+        // Opens the disclaimer when a 3D model's credit line is clicked.
+        (function () {
+            const dialog = document.getElementById('credit-dialog');
+            document.querySelectorAll('.model-credit').forEach(btn =>
+                btn.addEventListener('click', () => dialog.showModal()));
+            dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
         })();
     </script>
 

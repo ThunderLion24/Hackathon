@@ -380,6 +380,57 @@
             border-radius: 6px 6px 0 0;
         }
 
+        /* Legend and impact cards share the bars' three shades, bottom
+           piece first. */
+        .legend {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px 24px;
+            list-style: none;
+            font-weight: 600;
+        }
+
+        .legend li::before {
+            content: "";
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            margin-right: 8px;
+            border-radius: 4px;
+            vertical-align: -1px;
+            background: var(--blue-light);
+        }
+
+        .legend li:nth-child(2)::before { background: var(--blue-soft); }
+        .legend li:nth-child(3)::before { background: var(--blue); }
+
+        .impact-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(14px, 1.6vw, 28px);
+            width: min(1200px, 100%);
+            margin-top: clamp(24px, 4vh, 48px);
+            text-align: left;
+        }
+
+        .impact-cards .card:nth-child(2) { background: var(--blue-soft); }
+        .impact-cards .card:nth-child(3) { background: var(--blue); color: var(--cream); }
+
+        .impact-cards .card p { font-weight: 500; }
+
+        .impact-cards .stack > * + * { margin-top: 10px; }
+
+        .impact-title {
+            font-weight: 700;
+            font-size: clamp(1.2rem, 1.7vw, 2rem);
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            text-transform: uppercase;
+        }
+
+        #analysis .chart { height: clamp(120px, 22vh, 260px); }
+
         /* Slides 7 and 8: legal */
         .legal-text {
             max-width: 1150px;
@@ -593,7 +644,8 @@
             }
 
             .cards,
-            .matrix-cards {
+            .matrix-cards,
+            .impact-cards {
                 grid-template-columns: 1fr;
             }
 
@@ -623,13 +675,13 @@
                 <h1 class="title reveal">Porto restoration project</h1>
                 <div class="team reveal from-right">
                     <p class="bold">Made by:</p>
-                    <p>Celeste Campione<br>Leonard Farris<br>Nara Franssen<br>Emily Wu<br>Hila Zauberer</p>
+                    <p>Leonard Farris<br>Celeste Campione<br>Nara Franssen<br>Emily Wu<br>Hila Zauberer</p>
                 </div>
             </div>
             <div class="cover-bottom reveal">
                 <img class="logo" src="images/habiteco-logo.png" alt="HabitEco logo: Smart. Green. Affordable.">
                 <a class="scroll-hint" href="#where">Scroll <span aria-hidden="true">&#8595;</span></a>
-                <p class="note">None of the text here is AI</p>
+                <p class="note">None of the "text" here is AI</p>
             </div>
         </section>
 
@@ -656,15 +708,15 @@
                 <div class="cards">
                     <div class="card reveal from-right">
                         <span class="num">01</span>
-                        <p>How might we make it easier for people to connect with eachother?</p>
+                        <p>How might we make it easier for people to connect with each other?</p>
                     </div>
                     <div class="card reveal from-right">
                         <span class="num">02</span>
-                        <p>How might we revitalize and reus the beautiful unused land on the Douro?</p>
+                        <p>How might we revitalize and reuse the beautiful unused land on the Douro?</p>
                     </div>
                     <div class="card reveal from-right">
                         <span class="num">03</span>
-                        <p>How might we change the way people interact with eachothers and the environment?</p>
+                        <p>How might we change the way people interact with each other and the environment?</p>
                     </div>
                     <div class="card reveal from-right">
                         <span class="num">04</span>
@@ -734,11 +786,37 @@
                 <h2 class="title small">the analysis</h2>
                 <p class="lead">We used our three matrixes to find the best overall idea, something that excelled in atleast 2 of the three will not being terrible in the third option. We managed to find the best overall option and we analyzed how we could make it better. We added a community hub, and the central garden.</p>
                 <!-- Stacked bar chart from the Canva slide, same values and colours. -->
-                <div class="chart" role="img" aria-label="Stacked bar chart: four bars, each made of three shades of blue, rising from left to right.">
+                <div class="chart" role="img" aria-label="Stacked bar chart: four bars rising from left to right, each split into economic, community and environmental impact.">
                     <div class="bar" style="--b: 0; --total: 20"><span style="flex-grow: 8"></span><span style="flex-grow: 8"></span><span style="flex-grow: 4"></span></div>
                     <div class="bar" style="--b: 1; --total: 30"><span style="flex-grow: 12"></span><span style="flex-grow: 10"></span><span style="flex-grow: 8"></span></div>
                     <div class="bar" style="--b: 2; --total: 36"><span style="flex-grow: 16"></span><span style="flex-grow: 10"></span><span style="flex-grow: 10"></span></div>
                     <div class="bar" style="--b: 3; --total: 50"><span style="flex-grow: 20"></span><span style="flex-grow: 24"></span><span style="flex-grow: 6"></span></div>
+                </div>
+                <ul class="legend" aria-hidden="true">
+                    <li>Economic</li>
+                    <li>Community</li>
+                    <li>Environmental</li>
+                </ul>
+            </div>
+            <!-- One card per impact, coloured like its part of the bars. -->
+            <div class="impact-cards">
+                <div class="card reveal">
+                    <div class="stack">
+                        <h3 class="impact-title">Economic Impact</h3>
+                        <p>Our Idea improves the Economy by allowing more people to work and live in Porto.</p>
+                    </div>
+                </div>
+                <div class="card reveal">
+                    <div class="stack">
+                        <h3 class="impact-title">Community Impact</h3>
+                        <p>The celebration hub can integrate this new community and help people interact more</p>
+                    </div>
+                </div>
+                <div class="card reveal from-right">
+                    <div class="stack">
+                        <h3 class="impact-title">Environmental Impact</h3>
+                        <p>Adding the gardens and revitalizing unused land will help the environment in many ways</p>
+                    </div>
                 </div>
             </div>
         </section>

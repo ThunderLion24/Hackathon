@@ -160,6 +160,35 @@
             background: var(--blue);
         }
 
+        .cover-top .company {
+            margin-left: auto;
+            font-size: 0.25rem;
+            opacity: 0.75;
+            text-align: right;
+            font-family: inherit;
+            color: inherit;
+            background: none;
+            border: 0;
+            cursor: pointer;
+        }
+
+        /* Full-screen picture shown for a few seconds after clicking the company name. */
+        .evil {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            object-fit: cover;
+            background: #fff;
+            display: none;
+        }
+
+        .evil.shown {
+            display: block;
+        }
+
         .cover-main {
             display: grid;
             grid-template-columns: 1.6fr 1fr;
@@ -409,7 +438,7 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: clamp(14px, 1.6vw, 28px);
-            width: min(1200px, 100%);
+            width: 100%;
             margin-top: clamp(24px, 4vh, 48px);
             text-align: left;
         }
@@ -430,6 +459,15 @@
         }
 
         #analysis .chart { height: clamp(120px, 22vh, 260px); }
+
+        /* Pin the slide to one screen so the cards fill whatever the
+           chart leaves. */
+        #analysis {
+            height: 100vh;
+            height: 100svh;
+        }
+
+        #analysis .impact-cards { flex: 1; }
 
         /* Slides 7 and 8: legal */
         .legal-text {
@@ -649,6 +687,8 @@
                 grid-template-columns: 1fr;
             }
 
+            #analysis { height: auto; }
+
             .model-layout { grid-template-columns: 1fr; }
             .model { height: 60vh; }
             .model-credit { top: 16px; bottom: auto; }
@@ -662,6 +702,7 @@
 </head>
 <body>
     <nav class="dots" aria-label="Slides"></nav>
+    <img class="evil" src="images/doofenshmirtz.png" alt="Dr. Doofenshmirtz">
 
     <main>
         <!-- 1. Title -->
@@ -670,18 +711,22 @@
             <div class="cover-top reveal">
                 <span class="mark" aria-hidden="true"></span>
                 <p class="eyebrow">Hackathon 2026</p>
+                <button class="company" type="button">Doofensmirtz Evil Incorporated</button>
             </div>
             <div class="cover-main">
                 <h1 class="title reveal">Porto restoration project</h1>
                 <div class="team reveal from-right">
                     <p class="bold">Made by:</p>
-                    <p>Leonard Farris<br>Celeste Campione<br>Nara Franssen<br>Emily Wu<br>Hila Zauberer</p>
+                    <p>Leonard Farris<br>Céleste Campione<br>Nara Franssen<br>Emily Wu<br>Hila Zauberer</p>
                 </div>
             </div>
             <div class="cover-bottom reveal">
                 <img class="logo" src="images/habiteco-logo.png" alt="HabitEco logo: Smart. Green. Affordable.">
                 <a class="scroll-hint" href="#where">Scroll <span aria-hidden="true">&#8595;</span></a>
-                <p class="note">None of the <b>text</b> here is AI</p>
+                <div class="notes">
+                    <p class="note">None of the <b>text</b> here is fully AI generated</p>
+                    <p class="note">Some of the text has been <b>enhanced</b> by AI</p>
+                </div>
             </div>
         </section>
 
@@ -783,8 +828,6 @@
             <div class="blob top-right"></div>
             <div class="blob bottom-left"></div>
             <div class="stack reveal from-right">
-                <h2 class="title small">the analysis</h2>
-                <p class="lead">We used our three matrixes to find the best overall idea, something that excelled in atleast 2 of the three will not being terrible in the third option. We managed to find the best overall option and we analyzed how we could make it better. We added a community hub, and the central garden.</p>
                 <!-- Stacked bar chart from the Canva slide, same values and colours. -->
                 <div class="chart" role="img" aria-label="Stacked bar chart: four bars rising from left to right, each split into economic, community and environmental impact.">
                     <div class="bar" style="--b: 0; --total: 20"><span style="flex-grow: 8"></span><span style="flex-grow: 8"></span><span style="flex-grow: 4"></span></div>
@@ -803,19 +846,19 @@
                 <div class="card reveal">
                     <div class="stack">
                         <h3 class="impact-title">Economic Impact</h3>
-                        <p>Our Idea improves the Economy by allowing more people to work and live in Porto.</p>
+                        <p>Our innovative condominium will not only help those in need, but it will also help reduce crime rates by rehabilitating citizens involved in criminal activity, directly leading to more people in search of a job, boosting the local economy. We also collaborate with local businesses, and encourage our residents to rehabilitate through employment.</p>
                     </div>
                 </div>
                 <div class="card reveal">
                     <div class="stack">
                         <h3 class="impact-title">Community Impact</h3>
-                        <p>The celebration hub can integrate this new community and help people interact more</p>
+                        <p>The celebration hub can integrate this new community and help people interact more. Traditions, celebrations and holidays can all be hosted in our community hub, so everyone can be a part of the community. Our hope is to improve the relations between everyone, not just those who live in our apartments, but everyone in Bairro de Alexios</p>
                     </div>
                 </div>
                 <div class="card reveal from-right">
                     <div class="stack">
                         <h3 class="impact-title">Environmental Impact</h3>
-                        <p>Adding the gardens and revitalizing unused land will help the environment in many ways</p>
+                        <p>Solar panels cut reliance on non-renewable energy. Trees and gardens on unused land add green space, support biodiversity and clean the air. A community garden and a fish farm supply the on-site supermarket, so less food has to be shipped in.</p>
                     </div>
                 </div>
             </div>
@@ -1051,6 +1094,19 @@
                 if (i < 0) return;
                 e.preventDefault();
                 if (!animating) glideTo(i);
+            });
+
+            // Clicking the company name covers the screen with the picture for 5 seconds
+            // and plays the jingle from the start.
+            const evil = document.querySelector('.evil');
+            const jingle = new Audio('audio/doofenshmirtz-evil-incorporated.mp3');
+            let evilTimer;
+            document.querySelector('.cover-top .company').addEventListener('click', () => {
+                jingle.currentTime = 0;
+                jingle.play().catch(() => {});
+                evil.classList.add('shown');
+                clearTimeout(evilTimer);
+                evilTimer = setTimeout(() => evil.classList.remove('shown'), 5000);
             });
         })();
     </script>
